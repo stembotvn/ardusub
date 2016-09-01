@@ -26,7 +26,7 @@
 
 extern const AP_HAL::HAL& hal;
 
-#define ROUTING_DEBUG 1
+#define ROUTING_DEBUG 0
 
 // constructor
 MAVLink_routing::MAVLink_routing(void) : num_routes(0) {}
@@ -149,26 +149,9 @@ bool MAVLink_routing::check_and_forward(mavlink_channel_t in_channel, const mavl
                                  (broadcast_component || 
                                   target_component == routes[i].compid ||
                                   !match_system))) {
-
-#if ROUTING_DEBUG
-//                    ::printf("in ch %u, route ch %u route mask %u shift %u & %u\n",
-//                             (unsigned)in_channel,
-//                             (unsigned)routes[i].channel,
-//                             (unsigned)routes[i].destination_mask,
-//							 (unsigned)(1U<<(in_channel-MAVLINK_COMM_0)),
-//							 (unsigned)(routes[i].destination_mask & (1U<<(in_channel-MAVLINK_COMM_0))) );
-#endif
             if (in_channel != routes[i].channel && !sent_to_chan[routes[i].channel] && (routes[i].destination_mask & (1U<<(in_channel-MAVLINK_COMM_0))) ) {
                 if (comm_get_txspace(routes[i].channel) >= ((uint16_t)msg->len) +
                     GCS_MAVLINK::packet_overhead_chan(routes[i].channel)) {
-#if ROUTING_DEBUG
-//                    ::printf("fwd msg %u from chan %u on chan %u sysid=%d compid=%d\n",
-//                             msg->msgid,
-//                             (unsigned)in_channel,
-//                             (unsigned)routes[i].channel,
-//                             (int)target_system,
-//                             (int)target_component);
-#endif
                     _mavlink_resend_uart(routes[i].channel, msg);
                 }
                 sent_to_chan[routes[i].channel] = true;
@@ -224,13 +207,6 @@ bool MAVLink_routing::find_by_mavtype(uint8_t mavtype, uint8_t &sysid, uint8_t &
             sysid = routes[i].sysid;
             compid = routes[i].compid;
             channel = routes[i].channel;
-#if ROUTING_DEBUG
-//            ::printf("!!! GCS !!! sys %u comp %u chan %u mask %u\n",
-//                     (unsigned)routes[i].sysid,
-//                     (unsigned)routes[i].compid,
-//                     (unsigned)routes[i].channel,
-//                     (unsigned)routes[i].destination_mask);
-#endif
             return true;
         }
     }
@@ -256,6 +232,7 @@ void MAVLink_routing::learn_route(mavlink_channel_t in_channel, const mavlink_me
             routes[i].channel == in_channel) {
             if (routes[i].mavtype == 0 && msg->msgid == MAVLINK_MSG_ID_HEARTBEAT) {
                 routes[i].mavtype = mavlink_msg_heartbeat_get_type(msg);
+                // we can only update destinations after we find out what the mavtype on this route is
                 update_destinations();
             }
             break;
@@ -348,37 +325,33 @@ void MAVLink_routing::get_targets(const mavlink_message_t* msg, int16_t &sysid, 
     }
 }
 
+/*
+ * Create routing for many subsystems -> many GCS and
+ * many GCS -> many subsystems.
+ * This configuration prevents routing messages originating from
+ * a subsystem to all other subsystems.
+ * This also prevents forwarding heartbeats originating from GCS
+ * to subsystems. Heartbeats originating from subsystems are
+ * forwarded to GCS only.
+ */
 void MAVLink_routing::update_destinations()
 {
-	uint8_t gcs_channels = 0;
+	uint8_t gcs_channels = 0; // Bitmask of channels where mavtype = GCS
 	for(int i = 0; i < num_routes; i++) {
 		if(routes[i].mavtype == MAV_TYPE_GCS) {
-			routes[i].destination_mask = 0b11111111;
+			// GCS packets are forwarded on all channels to allow param fetching/setting
+			routes[i].destination_mask = 0xFF;
 			gcs_channels |= 1U<<(routes[i].channel-MAVLINK_COMM_0);
 		}
 	}
 
-	no_route_mask = 0;
+	no_route_mask = 0; // Bitmask of channels that would NOT like HEARTBEATS forwarded TO them
 	for(int i = 0; i < num_routes; i++) {
 		if(routes[i].mavtype != MAV_TYPE_GCS) {
+			// Forward all packets on all GCS channels
 			routes[i].destination_mask = gcs_channels;
+			// Do not forward HEARTBEATS to this channel
 			no_route_mask |= 1U<<(routes[i].channel-MAVLINK_COMM_0);
 		}
 	}
-
-
-//		} else {
-//		if(routes[i].mavtype != MAV_TYPE_GCS) {
-//			routes[i].destination_mask = 1U<<(gcs_chan-MAVLINK_COMM_0); // only route to gcs
-//			no_route_mask |= 1U<<(routes[i].channel-MAVLINK_COMM_0); // do not forward heartbeats to non-gcs systems
-#if ROUTING_DEBUG
-//                ::printf("mavtype %u sys %u comp %u chan %u mask %u\n",
-//                		(unsigned)routes[i].mavtype,
-//                         (unsigned)routes[i].sysid,
-//                         (unsigned)routes[i].compid,
-//                         (unsigned)routes[i].channel,
-//                         (unsigned)routes[i].destination_mask);
-#endif
-
-
 }
