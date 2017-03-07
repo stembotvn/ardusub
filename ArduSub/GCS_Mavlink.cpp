@@ -1399,10 +1399,7 @@ void GCS_MAVLINK_Sub::handleMessage(mavlink_message_t* msg)
             break;
 
         case MAV_CMD_DO_SET_MOTOR:
-            sub.motors.do_set_motor(packet.param1 - 1, packet.param2);
-            sub.gcs_send_text_fmt(MAV_SEVERITY_CRITICAL, "%0.2f:%0.2f", packet.param1, packet.param2);
-            result = MAV_RESULT_ACCEPTED;
-            sub.last_do_set_motor_ms = AP_HAL::millis();
+            result = sub.do_set_motor(packet.param1, packet.param2);
             break;
 
         case MAV_CMD_DO_SET_SERVO:

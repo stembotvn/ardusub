@@ -156,20 +156,6 @@ uint32_t AP_Motors::rc_map_mask(uint32_t mask) const
     return mask2;
 }
 
-void AP_Motors::do_set_motor(uint8_t output_channel, uint16_t pwm)
-{
-    printf("output_channel: %d, pwm: %d", output_channel, pwm);
-    if (output_channel > AP_MOTORS_MAX_NUM_MOTORS -1) {
-        printf("fail");
-        return;
-    }
-
-    if (_motor_fast_mask & 1UL << output_channel) {
-        printf("success");
-        hal.rcout->write(output_channel, pwm);
-    }
-}
-
 // convert input in -1 to +1 range to pwm output
 int16_t AP_Motors::calc_pwm_output_1to1(float input, const SRV_Channel *servo)
 {

@@ -161,7 +161,7 @@ void Sub::init_disarm_motors()
 // motors_output - send output to motors library which will adjust and send to ESCs and servos
 void Sub::motors_output()
 {
-    if (AP_HAL::millis() < last_do_set_motor_ms + 1000) {
+    if (AP_HAL::millis() < last_do_set_motor_ms + 500) {
         return;
     }
 
@@ -178,6 +178,19 @@ void Sub::motors_output()
         }
         motors.output();
     }
+}
+
+MAV_RESULT Sub::do_set_motor(uint8_t output_channel, uint16_t pwm)
+{
+    if (motors.armed()) {
+        gcs_send_text(MAV_SEVERITY_WARNING, "Disarm before testing motors.");
+        return MAV_RESULT_FAILED;
+    }
+    last_do_set_motor_ms = AP_HAL::millis();
+
+    // Output channels are zero-indexed
+    uint8_t chan = output_channel - 1;
+    return motors.do_set_motor(chan, pwm);
 }
 
 // check for pilot stick input to trigger lost vehicle alarm

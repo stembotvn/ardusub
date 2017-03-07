@@ -700,6 +700,7 @@ private:
     bool init_arm_motors(bool arming_from_gcs);
     void init_disarm_motors();
     void motors_output();
+    MAV_RESULT do_set_motor(uint8_t output_channel, uint16_t pwm);
     void lost_vehicle_check();
     void run_nav_updates(void);
     void calc_position();

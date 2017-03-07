@@ -89,6 +89,11 @@ public:
     // flight. Thrust is in the range 0 to 1
     void                output_motor_mask(float thrust, uint8_t mask);
 
+    // do_set_motor - spin a motor connected to the specified output channel.
+    //  If a motor output channel is remapped, the mapped channel is used.
+    //  Returns MAV_RESULT_ACCEPTED if motor output is set
+    MAV_RESULT          do_set_motor(uint8_t output_channel, uint16_t pwm);
+
     // get minimum or maximum pwm value that can be output to motors
     int16_t             get_pwm_output_min() const;
     int16_t             get_pwm_output_max() const;

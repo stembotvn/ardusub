@@ -143,9 +143,6 @@ public:
     //  pwm value is an actual pwm value that will be output, normally in the range of 1000 ~ 2000
     virtual void        output_test(uint8_t motor_seq, int16_t pwm) = 0;
 
-    // do_set_motor - spin a motor connected to the specified output channel
-    void                do_set_motor(uint8_t output_channel, uint16_t pwm);
-
     // get_motor_mask - returns a bitmask of which outputs are being used for motors (1 means being used)
     //  this can be used to ensure other pwm outputs (i.e. for servos) do not conflict
     virtual uint16_t    get_motor_mask() = 0;
