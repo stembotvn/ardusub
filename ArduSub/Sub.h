@@ -253,6 +253,7 @@ private:
             uint8_t at_bottom           : 1; // true if we are at the bottom
             uint8_t at_surface          : 1; // true if we are at the surface
             uint8_t depth_sensor_present: 1; // true if we have an external baro connected
+            uint8_t motor_test_new      : 1; // true if we are currently performing new style motor test
         };
         uint32_t value;
     } ap;
@@ -697,6 +698,9 @@ private:
     bool init_arm_motors(bool arming_from_gcs);
     void init_disarm_motors();
     void motors_output();
+    bool init_motor_test();
+    bool verify_motor_test();
+    bool do_set_motor(uint8_t output_channel, uint16_t pwm);
     void lost_vehicle_check();
     void run_nav_updates(void);
     void calc_position();

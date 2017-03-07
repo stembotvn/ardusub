@@ -620,3 +620,26 @@ void AP_MotorsMulticopter::save_params_on_disarm()
         _throttle_hover.save();
     }
 }
+
+// Set motor output for new style motor test
+// Returns true if the requested motor output was executed
+bool AP_MotorsMulticopter::do_set_motor(uint8_t output_channel, uint16_t pwm)
+{
+    if (!armed()) {
+        return false;
+    }
+
+    // Is channel in supported range?
+    if (output_channel > AP_MOTORS_MAX_NUM_MOTORS -1) {
+        return false;
+    }
+
+    // Is motor enabled?
+    if (!motor_enabled[output_channel]) {
+        return false;
+    }
+
+    pwm = constrain_int16(pwm, 800, 2200);
+    rc_write(output_channel, pwm); // output
+    return true;
+}

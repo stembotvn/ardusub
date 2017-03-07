@@ -1398,6 +1398,12 @@ void GCS_MAVLINK_Sub::handleMessage(mavlink_message_t* msg)
             }
             break;
 
+        case MAV_CMD_DO_SET_MOTOR:
+            if (sub.do_set_motor(packet.param1, packet.param2)) {
+                result = MAV_RESULT_ACCEPTED;
+            }
+            break;
+
         case MAV_CMD_DO_SET_SERVO:
             if (sub.ServoRelayEvents.do_set_servo(packet.param1, packet.param2)) {
                 result = MAV_RESULT_ACCEPTED;

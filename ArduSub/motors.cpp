@@ -5,6 +5,9 @@
 #define AUTO_TRIM_DELAY         100 // called at 10hz so 10 seconds
 #define LOST_VEHICLE_DELAY      10  // called at 10hz so 1 second
 
+// last time a DO_SET_MOTOR command was received
+static uint32_t last_do_set_motor_ms = 0;
+static uint32_t last_do_set_motor_fail_ms = 0;
 //static uint32_t auto_disarm_begin;
 
 // auto_disarm_check
@@ -46,6 +49,12 @@ bool Sub::init_arm_motors(bool arming_from_gcs)
     }
 
     in_arm_motors = true;
+
+    // We are currently performing motor test
+    if (ap.motor_test_new) {
+        in_arm_motors = false;
+        return false;
+    }
 
     if (!arming.pre_arm_checks(true)) {
         AP_Notify::events.arming_failed = true;
@@ -161,6 +170,11 @@ void Sub::init_disarm_motors()
 // motors_output - send output to motors library which will adjust and send to ESCs and servos
 void Sub::motors_output()
 {
+    if (ap.motor_test_new) {
+        verify_motor_test();
+        return;
+    }
+
     // check if we are performing the motor test
     if (ap.motor_test) {
         motor_test_output();
@@ -174,6 +188,88 @@ void Sub::motors_output()
         }
         motors.output();
     }
+}
+
+// Initialize new style motor test
+// Perform checks to see if it is ok to begin the motor test
+// Returns true if motor test has begun
+bool Sub::init_motor_test()
+{
+    uint32_t tnow = AP_HAL::millis();
+
+    // Ten second cooldown period required with no do_set_motor requests required
+    // after failure.
+    if (tnow < last_do_set_motor_fail_ms + 10000 && last_do_set_motor_fail_ms > 0) {
+        last_do_set_motor_fail_ms = tnow;
+        return false;
+    }
+
+    // check if safety switch has been pushed
+    if (hal.util->safety_switch_state() == AP_HAL::Util::SAFETY_DISARMED) {
+        gcs_send_text(MAV_SEVERITY_CRITICAL,"Motor Test: Safety switch");
+        return false;
+    }
+
+    // Make sure we are on the ground
+    if (motors.armed()) {
+        gcs_send_text(MAV_SEVERITY_WARNING, "Disarm before testing motors.");
+        return false;
+    }
+
+    ap.motor_test_new = true;
+
+    // Arm motors
+    enable_motor_output();
+    motors.armed(true);
+
+    return true;
+}
+
+// Verify new style motor test
+// The motor test will fail if vehicle motion is detected or if
+// the interval between received MAV_CMD_DO_SET_MOTOR requests exceeds
+// a timeout period
+// Returns true if it is ok to proceed with new style motor test
+bool Sub::verify_motor_test()
+{
+    bool pass = true;
+
+    // No sudden movements... ensures props are off during test
+    if (ahrs.get_gyro().length() > 0.1) {
+        pass = false;
+    }
+
+    // Require at least 2 Hz incoming do_set_motor requests
+    if (AP_HAL::millis() > last_do_set_motor_ms + 500) {
+        pass = false;
+    }
+
+    if (!pass) {
+        ap.motor_test_new = false;
+        motors.armed(false); // disarm motors
+        last_do_set_motor_fail_ms = AP_HAL::millis();
+        return false;
+    }
+
+    return true;
+}
+
+
+// Handle MAV_CMD_DO_SET_MOTOR
+// Returns true if command is accepted and executed
+bool Sub::do_set_motor(uint8_t output_channel, uint16_t pwm)
+{
+    last_do_set_motor_ms = AP_HAL::millis();
+
+    if(!ap.motor_test_new) {
+        if (!init_motor_test()) {
+            return false;
+        }
+    }
+
+    // Output channels are zero-indexed
+    uint8_t chan = output_channel - 1;
+    return motors.do_set_motor(chan, pwm);
 }
 
 // check for pilot stick input to trigger lost vehicle alarm
