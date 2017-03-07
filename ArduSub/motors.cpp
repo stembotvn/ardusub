@@ -161,6 +161,10 @@ void Sub::init_disarm_motors()
 // motors_output - send output to motors library which will adjust and send to ESCs and servos
 void Sub::motors_output()
 {
+    if (AP_HAL::millis() < last_do_set_motor_ms + 1000) {
+        return;
+    }
+
     // check if we are performing the motor test
     if (ap.motor_test) {
         motor_test_output();

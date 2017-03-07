@@ -217,6 +217,9 @@ private:
     // system time in milliseconds of last recorded yaw reset from ekf
     uint32_t ekfYawReset_ms = 0;
 
+    // last time a DO_SET_MOTOR command was received
+    uint32_t last_do_set_motor_ms = 0;
+
     // GCS selection
     AP_SerialManager serial_manager;
     static const uint8_t num_gcs = MAVLINK_COMM_NUM_BUFFERS;
