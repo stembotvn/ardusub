@@ -623,6 +623,10 @@ void AP_MotorsMulticopter::save_params_on_disarm()
 
 bool AP_MotorsMulticopter::do_set_motor(uint8_t output_channel, uint16_t pwm)
 {
+    if (!armed()) {
+        return false;
+    }
+
     // Is channel in supported range?
     if (output_channel > AP_MOTORS_MAX_NUM_MOTORS -1) {
         return false;

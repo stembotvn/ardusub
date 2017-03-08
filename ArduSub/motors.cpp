@@ -170,7 +170,8 @@ void Sub::init_disarm_motors()
 // motors_output - send output to motors library which will adjust and send to ESCs and servos
 void Sub::motors_output()
 {
-    if (ap.motor_test_new && verify_motor_test()) {
+    if (ap.motor_test_new) {
+        verify_motor_test();
         return;
     }
 
@@ -191,12 +192,6 @@ void Sub::motors_output()
 
 bool Sub::init_motor_test()
 {
-    // check if safety switch has been pushed
-    if (hal.util->safety_switch_state() == AP_HAL::Util::SAFETY_DISARMED) {
-        gcs_chan[chan-MAVLINK_COMM_0].send_text(MAV_SEVERITY_CRITICAL,"Motor Test: Safety switch");
-        return false;
-    }
-
     uint32_t tnow = AP_HAL::millis();
 
     // Ten second cooldown period required with no do_set_motor requests required
@@ -207,16 +202,44 @@ bool Sub::init_motor_test()
         return false;
     }
 
+    // check if safety switch has been pushed
+    if (hal.util->safety_switch_state() == AP_HAL::Util::SAFETY_DISARMED) {
+        gcs_send_text(MAV_SEVERITY_CRITICAL,"Motor Test: Safety switch");
+        return false;
+    }
+
+    // Make sure we are on the ground
+    if (motors.armed()) {
+        gcs_send_text(MAV_SEVERITY_WARNING, "Disarm before testing motors.");
+        return false;
+    }
+
     ap.motor_test_new = true;
+
+    // Arm motors
+    enable_motor_output();
+    motors.armed(true);
 
     return true;
 }
 
 bool Sub::verify_motor_test()
 {
+    bool pass = true;
+
     // No sudden movements... ensures props are off during test
-    if(motors.armed() || ahrs.get_gyro().length() > 0.1) {
+    if (ahrs.get_gyro().length() > 0.1) {
+        pass = false;
+    }
+
+    // Require at least 2 Hz incoming do_set_motor requests
+    if (AP_HAL::millis() > last_do_set_motor_ms + 500) {
+        pass = false;
+    }
+
+    if (!pass) {
         ap.motor_test_new = false;
+        motors.armed(false); // disarm motors
         last_do_set_motor_fail_ms = AP_HAL::millis();
         return false;
     }
@@ -227,11 +250,6 @@ bool Sub::verify_motor_test()
 bool Sub::do_set_motor(uint8_t output_channel, uint16_t pwm)
 {
     last_do_set_motor_ms = AP_HAL::millis();
-
-    if (motors.armed()) {
-        gcs_send_text(MAV_SEVERITY_WARNING, "Disarm before testing motors.");
-        return false;
-    }
 
     if(!ap.motor_test_new) {
         if (!init_motor_test()) {
