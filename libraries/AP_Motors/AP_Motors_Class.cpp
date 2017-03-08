@@ -23,8 +23,6 @@
 #include <AP_HAL/AP_HAL.h>
 #include <SRV_Channel/SRV_Channel.h>
 
-#include <stdio.h>
-
 extern const AP_HAL::HAL& hal;
 
 // Constructor

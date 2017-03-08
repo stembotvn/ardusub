@@ -50,6 +50,12 @@ bool Sub::init_arm_motors(bool arming_from_gcs)
 
     in_arm_motors = true;
 
+    // We are currently performing motor test
+    if (ap.motor_test_new) {
+        in_arm_motors = false;
+        return false;
+    }
+
     if (!arming.pre_arm_checks(true)) {
         AP_Notify::events.arming_failed = true;
         in_arm_motors = false;
@@ -185,6 +191,12 @@ void Sub::motors_output()
 
 bool Sub::init_motor_test()
 {
+    // check if safety switch has been pushed
+    if (hal.util->safety_switch_state() == AP_HAL::Util::SAFETY_DISARMED) {
+        gcs_chan[chan-MAVLINK_COMM_0].send_text(MAV_SEVERITY_CRITICAL,"Motor Test: Safety switch");
+        return false;
+    }
+
     uint32_t tnow = AP_HAL::millis();
 
     // Ten second cooldown period required with no do_set_motor requests required
