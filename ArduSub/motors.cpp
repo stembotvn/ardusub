@@ -5,6 +5,9 @@
 #define AUTO_TRIM_DELAY         100 // called at 10hz so 10 seconds
 #define LOST_VEHICLE_DELAY      10  // called at 10hz so 1 second
 
+// last time a DO_SET_MOTOR command was received
+static uint32_t last_do_set_motor_ms = 0;
+static uint32_t last_do_set_motor_fail_ms = 0;
 //static uint32_t auto_disarm_begin;
 
 // auto_disarm_check
@@ -157,11 +160,11 @@ void Sub::init_disarm_motors()
     ahrs.set_correct_centrifugal(false);
     hal.util->set_soft_armed(false);
 }
-
+#include <stdio.h>
 // motors_output - send output to motors library which will adjust and send to ESCs and servos
 void Sub::motors_output()
 {
-    if (AP_HAL::millis() < last_do_set_motor_ms + 500) {
+    if (ap.motor_test_new && verify_motor_test()) {
         return;
     }
 
@@ -180,13 +183,49 @@ void Sub::motors_output()
     }
 }
 
+bool Sub::init_motor_test()
+{
+    uint32_t tnow = AP_HAL::millis();
+
+    if (tnow < last_do_set_motor_fail_ms + 10000 && last_do_set_motor_fail_ms > 0) {
+        printf("\n init failed");
+        last_do_set_motor_fail_ms = tnow;
+        return false;
+    }
+
+    ap.motor_test_new = true;
+
+    return true;
+}
+
+bool Sub::verify_motor_test()
+{
+    if(motors.armed() || ahrs.get_gyro().length() > 0.1) {
+        printf("\n verify failed");
+        ap.motor_test_new = false;
+        last_do_set_motor_fail_ms = AP_HAL::millis();
+        return false;
+    }
+
+    return true;
+}
+
 MAV_RESULT Sub::do_set_motor(uint8_t output_channel, uint16_t pwm)
 {
+    last_do_set_motor_ms = AP_HAL::millis();
+
     if (motors.armed()) {
         gcs_send_text(MAV_SEVERITY_WARNING, "Disarm before testing motors.");
         return MAV_RESULT_FAILED;
     }
-    last_do_set_motor_ms = AP_HAL::millis();
+
+    if(!ap.motor_test_new) {
+        if (!init_motor_test()) {
+            return MAV_RESULT_FAILED;
+        }
+    }
+
+    printf("testing motor %d", output_channel);
 
     // Output channels are zero-indexed
     uint8_t chan = output_channel - 1;

@@ -1,4 +1,5 @@
 #include "Sub.h"
+#include <stdio.h>
 
 #ifdef USERHOOK_INIT
 void Sub::userhook_init()

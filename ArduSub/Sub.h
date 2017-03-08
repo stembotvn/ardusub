@@ -217,9 +217,6 @@ private:
     // system time in milliseconds of last recorded yaw reset from ekf
     uint32_t ekfYawReset_ms = 0;
 
-    // last time a DO_SET_MOTOR command was received
-    uint32_t last_do_set_motor_ms = 0;
-
     // GCS selection
     AP_SerialManager serial_manager;
     static const uint8_t num_gcs = MAVLINK_COMM_NUM_BUFFERS;
@@ -256,6 +253,7 @@ private:
             uint8_t at_bottom           : 1; // true if we are at the bottom
             uint8_t at_surface          : 1; // true if we are at the surface
             uint8_t depth_sensor_present: 1; // true if we have an external baro connected
+            uint8_t motor_test_new      : 1; // true if we are currently performing new-style motor test
         };
         uint32_t value;
     } ap;
@@ -700,6 +698,8 @@ private:
     bool init_arm_motors(bool arming_from_gcs);
     void init_disarm_motors();
     void motors_output();
+    bool init_motor_test();
+    bool verify_motor_test();
     MAV_RESULT do_set_motor(uint8_t output_channel, uint16_t pwm);
     void lost_vehicle_check();
     void run_nav_updates(void);
