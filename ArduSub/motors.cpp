@@ -190,6 +190,9 @@ void Sub::motors_output()
     }
 }
 
+// Initialize new style motor test
+// Perform checks to see if it is ok to begin the motor test
+// Returns true if motor test has begun
 bool Sub::init_motor_test()
 {
     uint32_t tnow = AP_HAL::millis();
@@ -197,7 +200,6 @@ bool Sub::init_motor_test()
     // Ten second cooldown period required with no do_set_motor requests required
     // after failure.
     if (tnow < last_do_set_motor_fail_ms + 10000 && last_do_set_motor_fail_ms > 0) {
-        printf("\n init failed");
         last_do_set_motor_fail_ms = tnow;
         return false;
     }
@@ -223,6 +225,11 @@ bool Sub::init_motor_test()
     return true;
 }
 
+// Verify new style motor test
+// The motor test will fail if vehicle motion is detected or if
+// the interval between received MAV_CMD_DO_SET_MOTOR requests exceeds
+// a timeout period
+// Returns true if it is ok to proceed with new style motor test
 bool Sub::verify_motor_test()
 {
     bool pass = true;
@@ -247,6 +254,9 @@ bool Sub::verify_motor_test()
     return true;
 }
 
+
+// Handle MAV_CMD_DO_SET_MOTOR
+// Returns true if command is accepted and executed
 bool Sub::do_set_motor(uint8_t output_channel, uint16_t pwm)
 {
     last_do_set_motor_ms = AP_HAL::millis();

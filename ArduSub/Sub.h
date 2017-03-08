@@ -253,7 +253,7 @@ private:
             uint8_t at_bottom           : 1; // true if we are at the bottom
             uint8_t at_surface          : 1; // true if we are at the surface
             uint8_t depth_sensor_present: 1; // true if we have an external baro connected
-            uint8_t motor_test_new      : 1; // true if we are currently performing new-style motor test
+            uint8_t motor_test_new      : 1; // true if we are currently performing new style motor test
         };
         uint32_t value;
     } ap;

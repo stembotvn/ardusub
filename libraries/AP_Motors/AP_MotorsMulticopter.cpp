@@ -621,6 +621,8 @@ void AP_MotorsMulticopter::save_params_on_disarm()
     }
 }
 
+// Set motor output for new style motor test
+// Returns true if the requested motor output was executed
 bool AP_MotorsMulticopter::do_set_motor(uint8_t output_channel, uint16_t pwm)
 {
     if (!armed()) {
