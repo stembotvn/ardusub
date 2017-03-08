@@ -700,7 +700,7 @@ private:
     void motors_output();
     bool init_motor_test();
     bool verify_motor_test();
-    MAV_RESULT do_set_motor(uint8_t output_channel, uint16_t pwm);
+    bool do_set_motor(uint8_t output_channel, uint16_t pwm);
     void lost_vehicle_check();
     void run_nav_updates(void);
     void calc_position();

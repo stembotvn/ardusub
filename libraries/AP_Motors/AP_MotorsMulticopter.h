@@ -91,8 +91,8 @@ public:
 
     // do_set_motor - spin a motor connected to the specified output channel.
     //  If a motor output channel is remapped, the mapped channel is used.
-    //  Returns MAV_RESULT_ACCEPTED if motor output is set
-    MAV_RESULT          do_set_motor(uint8_t output_channel, uint16_t pwm);
+    //  Returns true if motor output is set, false otherwise
+    bool                do_set_motor(uint8_t output_channel, uint16_t pwm);
 
     // get minimum or maximum pwm value that can be output to motors
     int16_t             get_pwm_output_min() const;

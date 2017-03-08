@@ -160,7 +160,7 @@ void Sub::init_disarm_motors()
     ahrs.set_correct_centrifugal(false);
     hal.util->set_soft_armed(false);
 }
-#include <stdio.h>
+
 // motors_output - send output to motors library which will adjust and send to ESCs and servos
 void Sub::motors_output()
 {
@@ -187,6 +187,8 @@ bool Sub::init_motor_test()
 {
     uint32_t tnow = AP_HAL::millis();
 
+    // Ten second cooldown period required with no do_set_motor requests required
+    // after failure.
     if (tnow < last_do_set_motor_fail_ms + 10000 && last_do_set_motor_fail_ms > 0) {
         printf("\n init failed");
         last_do_set_motor_fail_ms = tnow;
@@ -200,8 +202,8 @@ bool Sub::init_motor_test()
 
 bool Sub::verify_motor_test()
 {
+    // No sudden movements... ensures props are off during test
     if(motors.armed() || ahrs.get_gyro().length() > 0.1) {
-        printf("\n verify failed");
         ap.motor_test_new = false;
         last_do_set_motor_fail_ms = AP_HAL::millis();
         return false;
@@ -210,22 +212,20 @@ bool Sub::verify_motor_test()
     return true;
 }
 
-MAV_RESULT Sub::do_set_motor(uint8_t output_channel, uint16_t pwm)
+bool Sub::do_set_motor(uint8_t output_channel, uint16_t pwm)
 {
     last_do_set_motor_ms = AP_HAL::millis();
 
     if (motors.armed()) {
         gcs_send_text(MAV_SEVERITY_WARNING, "Disarm before testing motors.");
-        return MAV_RESULT_FAILED;
+        return false;
     }
 
     if(!ap.motor_test_new) {
         if (!init_motor_test()) {
-            return MAV_RESULT_FAILED;
+            return false;
         }
     }
-
-    printf("testing motor %d", output_channel);
 
     // Output channels are zero-indexed
     uint8_t chan = output_channel - 1;

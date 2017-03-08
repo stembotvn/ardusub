@@ -621,17 +621,19 @@ void AP_MotorsMulticopter::save_params_on_disarm()
     }
 }
 
-MAV_RESULT AP_MotorsMulticopter::do_set_motor(uint8_t output_channel, uint16_t pwm)
+bool AP_MotorsMulticopter::do_set_motor(uint8_t output_channel, uint16_t pwm)
 {
+    // Is channel in supported range?
     if (output_channel > AP_MOTORS_MAX_NUM_MOTORS -1) {
-        return MAV_RESULT_FAILED;
+        return false;
     }
 
+    // Is motor enabled?
     if (!motor_enabled[output_channel]) {
-        return MAV_RESULT_FAILED;
+        return false;
     }
 
     pwm = constrain_int16(pwm, 800, 2200);
-    rc_write(output_channel, pwm);
-    return MAV_RESULT_ACCEPTED;
+    rc_write(output_channel, pwm); // output
+    return true;
 }

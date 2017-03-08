@@ -1399,7 +1399,9 @@ void GCS_MAVLINK_Sub::handleMessage(mavlink_message_t* msg)
             break;
 
         case MAV_CMD_DO_SET_MOTOR:
-            result = sub.do_set_motor(packet.param1, packet.param2);
+            if (sub.do_set_motor(packet.param1, packet.param2)) {
+                result = MAV_RESULT_ACCEPTED;
+            }
             break;
 
         case MAV_CMD_DO_SET_SERVO:
