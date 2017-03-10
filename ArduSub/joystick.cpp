@@ -345,6 +345,45 @@ void Sub::handle_jsbutton_press(uint8_t button, bool shift, bool held)
             relay.toggle(1);
         }
         break;
+    case JSButton::button_function_t::k_servo_1_inc:
+        uint16_t pwm_out = hal.rcout->read(8);
+        pwm_out = constrain_int16(pwm_out + 50, 1000, 2000);
+        ServoRelayEvents.do_set_servo(9, pwm_out);
+        break;
+    case JSButton::button_function_t::k_servo_1_dec:
+        uint16_t pwm_out = hal.rcout->read(8);
+        pwm_out = constrain_int16(pwm_out - 50, 1000, 2000);
+        ServoRelayEvents.do_set_servo(9, pwm_out);
+        break;
+    case JSButton::button_function_t::k_servo_1_center:
+        ServoRelayEvents.do_set_servo(9, 1500);
+        break;
+    case JSButton::button_function_t::k_servo_2_inc:
+        uint16_t pwm_out = hal.rcout->read(9);
+        pwm_out = constrain_int16(pwm_out + 50, 1000, 2000);
+        ServoRelayEvents.do_set_servo(10, pwm_out);
+        break;
+    case JSButton::button_function_t::k_servo_2_dec:
+        uint16_t pwm_out = hal.rcout->read(9);
+        pwm_out = constrain_int16(pwm_out - 50, 1000, 2000);
+        ServoRelayEvents.do_set_servo(10, pwm_out);
+        break;
+    case JSButton::button_function_t::k_servo_2_center:
+        ServoRelayEvents.do_set_servo(10, 1500);
+        break;
+    case JSButton::button_function_t::k_servo_3_inc:
+        uint16_t pwm_out = hal.rcout->read(10);
+        pwm_out = constrain_int16(pwm_out + 50, 1000, 2000);
+        ServoRelayEvents.do_set_servo(11, pwm_out);
+        break;
+    case JSButton::button_function_t::k_servo_3_dec:
+        uint16_t pwm_out = hal.rcout->read(10);
+        pwm_out = constrain_int16(pwm_out - 50, 1000, 2000);
+        ServoRelayEvents.do_set_servo(11, pwm_out);
+        break;
+    case JSButton::button_function_t::k_servo_3_center:
+        ServoRelayEvents.do_set_servo(11, 1500);
+        break;
     case JSButton::button_function_t::k_custom_1:
         // Not implemented
         break;
