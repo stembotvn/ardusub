@@ -25,8 +25,10 @@
 #include <AP_Vehicle/AP_Vehicle.h>
 #include <stdio.h>
 
-#if APM_BUILD_TYPE(APM_BUILD_ArduCopter) || APM_BUILD_TYPE(APM_BUILD_ArduSub)
+#if APM_BUILD_TYPE(APM_BUILD_ArduCopter)
 #define SCHEDULER_DEFAULT_LOOP_RATE 400
+#elif APM_BUILD_TYPE(APM_BUILD_ArduSub)
+#define SCHEDULER_DEFAULT_LOOP_RATE 200
 #else
 #define SCHEDULER_DEFAULT_LOOP_RATE  50
 #endif
