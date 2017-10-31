@@ -4,7 +4,7 @@
 /*
  * control_acro.pde - init and run calls for acro flight mode
  */
-
+/*
 // acro_init - initialise acro controller
 bool Sub::acro_init()
 {
@@ -155,3 +155,4 @@ void Sub::get_pilot_desired_angle_rates(int16_t roll_in, int16_t pitch_in, int16
     pitch_out = rate_bf_request.y;
     yaw_out = rate_bf_request.z;
 }
+*/
