@@ -5,11 +5,39 @@
  * control_autoconfig.pde - automatic configuration of thruster directions
  */
 
+// Anonymous namespace to hold variables used only in this file
+namespace {
+uint8_t  config_attempts;
+uint8_t  chan;
+uint8_t  max_chan           = 6;
+uint16_t pwm                = 1300;
+uint16_t pwm_neutral        = 1500;
+uint32_t config_start_time;
+float    initial_rpy[3];
+}
+
 // autoconfig_init - initialise auto-configuration controller
 bool Sub::acro_init()
 {
     // set target altitude to zero for reporting
 //     pos_control.set_alt_target(0);
+
+    // stop all motors
+    motors.output_min();
+
+    // reset to channel 1
+    chan = 0;
+
+    // reset start time
+    config_start_time = AP_HAL::millis();
+
+    // measure starting attitude
+    initial_rpy[0] = ahrs_view.roll;
+    initial_rpy[1] = ahrs_view.pitch;
+    initial_rpy[2] = ahrs_view.yaw;
+
+    // reset attempts counter
+    config_attempts = 0;
 
     return true;
 }
@@ -18,9 +46,6 @@ bool Sub::acro_init()
 // should be called at 100hz or more
 void Sub::acro_run()
 {
-
-//     float target_roll, target_pitch, target_yaw;
-
     // if not armed set throttle to zero and exit immediately
     if (!motors.armed()) {
         motors.set_desired_spool_state(AP_Motors::DESIRED_SPIN_WHEN_ARMED);
@@ -30,30 +55,58 @@ void Sub::acro_run()
 
     motors.set_desired_spool_state(AP_Motors::DESIRED_THROTTLE_UNLIMITED);
 
+    // get current time
+    uint32_t now = AP_HAL::millis();
+
     // run one motor at a time
-    motors.set_forward(channel_roll->norm_input()*0.67f);
+    bool motor_set = motors.set_output(chan, pwm);
+
     // check gyro (and accelerometer?)
     // integrate rotation rate over __ seconds
     // if enough time has elapsed
+    if (now - config_start_time > 1000) {
+//         float final_rpy[] = {ahrs_view.roll, ahrs_view.pitch, ahrs_view.yaw};
+//         float delta_rpy[3];
+//         for (int i=0; i<3; i++) {
+//             delta_rpy[i] = final_rpy[i] - initial_rpy[i];
+//         }
         // dot product against reference (xref,yref,zref)*(dx,dy,dz)
-            // e.g. (0,0,-1) for motor 1, (0,-1,0) for motor 6 (vectored)
+            // motors.get_rpy_factor(chan) .* (dx, dy, dz)
+//         float dot_product = 0;
+//         for (int i=0; i<3; i++) {
+//             dot_product += motors.get_rpy_factor(chan)[i] * delta_rpy[i];
+//         }
         // if dot product is greater than threshold, non-reversed
+            // move on to next motor
+            chan++;
+
         // else if less than negative threshold, reversed
+            // move on to next motor
+//             chan++;
+
         // else inconclusive, redo
 
-    // convert the input to the desired body frame rate
-//     get_pilot_desired_angle_rates(channel_roll->get_control_in(), channel_pitch->get_control_in(), channel_yaw->get_control_in(), target_roll, target_pitch, target_yaw);
+        // quit if next motor is beyond the last one
+        if (chan >= max_chan) {
+            // go to manual mode
+            set_mode(MANUAL, MODE_REASON_UNKNOWN);
+        }
 
-    // run attitude controller
-//     attitude_control.input_rate_bf_roll_pitch_yaw(target_roll, target_pitch, target_yaw);
+        // stop all motors
+        motors.output_min();
 
-    // output pilot's throttle without angle boost
-//     attitude_control.set_throttle_out(channel_throttle->norm_input(), false, g.throttle_filt);
+        // measure starting attitude
+        initial_rpy[0] = ahrs_view.roll;
+        initial_rpy[1] = ahrs_view.pitch;
+        initial_rpy[2] = ahrs_view.yaw;
 
-    //control_in is range 0-1000
-    //radio_in is raw pwm value
-//     motors.set_forward(channel_forward->norm_input());
-//     motors.set_lateral(channel_lateral->norm_input());
+        // reset attempts counter
+        config_attempts = 0;
+
+        // reset start time
+        config_start_time = AP_HAL::millis();
+    }
+
 }
 
 
