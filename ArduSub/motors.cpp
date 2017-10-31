@@ -128,6 +128,11 @@ void Sub::init_disarm_motors()
 // motors_output - send output to motors library which will adjust and send to ESCs and servos
 void Sub::motors_output()
 {
+    // exit if we are running autoconfig
+    if (control_mode == ACRO) {
+        return;
+    }
+
     // check if we are performing the motor test
     if (ap.motor_test) {
         verify_motor_test();
