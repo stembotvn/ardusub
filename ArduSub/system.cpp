@@ -19,8 +19,11 @@ static void failsafe_check_static()
 
 void Sub::init_ardupilot()
 {
+    hal.scheduler->delay(1000);
+
     // initialise serial port
     serial_manager.init_console();
+    hal.scheduler->delay(1000);
 
     hal.console->printf("\n\nInit %s"
                         "\n\nFree RAM: %u\n",
@@ -72,6 +75,8 @@ void Sub::init_ardupilot()
     barometer.init();
 
     celsius.init();
+
+    conductivity.init();
 
     // Register the mavlink service callback. This will run
     // anytime there are more than 5ms remaining in a call to

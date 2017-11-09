@@ -74,8 +74,7 @@
 #include <AP_JSButton/AP_JSButton.h>   // Joystick/gamepad button function assignment
 #include <AP_LeakDetector/AP_LeakDetector.h> // Leak detector
 #include <AP_TemperatureSensor/TSYS01.h>
-
-// Local modules
+#include "../libraries/AP_Conductivity/AP_Conductivity.h"
 #include "defines.h"
 #include "config.h"
 #include "GCS_Mavlink.h"
@@ -166,6 +165,7 @@ private:
     AP_LeakDetector leak_detector = AP_LeakDetector::create();
 
     TSYS01 celsius;
+    AP_Conductivity conductivity;
     AP_Baro barometer = AP_Baro::create();
     Compass compass = Compass::create();
     AP_InertialSensor ins = AP_InertialSensor::create();

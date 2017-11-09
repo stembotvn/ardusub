@@ -22,7 +22,8 @@ def build(bld):
             'AP_Gripper',
             'AP_Beacon',
             'AP_TemperatureSensor',
-            'AP_Arming'
+            'AP_Arming',
+            'AP_Conductivity'
         ],
     )
 

@@ -80,6 +80,7 @@ public:
         k_param_rangefinder, // Rangefinder
         k_param_gps, // GPS
         k_param_optflow, // Optical Flow
+        k_param_conductivity,
 
 
         // Navigation libraries

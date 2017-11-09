@@ -622,6 +622,9 @@ const AP_Param::Info Sub::var_info[] = {
     // @Path: ../libraries/AP_Baro/AP_Baro.cpp
     GOBJECT(barometer, "GND_", AP_Baro),
 
+    //
+    GOBJECT(conductivity, "CD_", AP_Conductivity),
+
     // GPS driver
     // @Group: GPS_
     // @Path: ../libraries/AP_GPS/AP_GPS.cpp
