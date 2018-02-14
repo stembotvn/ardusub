@@ -85,26 +85,26 @@ void Sub::transform_manual_control_to_rc_override(int16_t x, int16_t y, int16_t 
     // attitude mode:
     if (roll_pitch_flag == 1) {
     // adjust roll/pitch trim with joystick input instead of forward/lateral
-        pitchTrim = -x * rpyScale;
-        rollTrim  =  y * rpyScale;
+        rollTrim  = r * rpyScale;
+        pitchTrim = -(z * throttleScale + throttleBase - rpyCenter);
     }
 
     channels[0] = constrain_int16(pitchTrim + rpyCenter,1100,1900); // pitch
     channels[1] = constrain_int16(rollTrim  + rpyCenter,1100,1900); // roll
 
-    channels[2] = constrain_int16((z+zTrim)*throttleScale+throttleBase,1100,1900); // throttle
-    channels[3] = constrain_int16(r*rpyScale+rpyCenter,1100,1900);                 // yaw
-
     // maneuver mode:
     if (roll_pitch_flag == 0) {
-        // adjust forward and lateral with joystick input instead of roll and pitch
-        channels[4] = constrain_int16((x+xTrim)*rpyScale+rpyCenter,1100,1900); // forward for ROV
-        channels[5] = constrain_int16((y+yTrim)*rpyScale+rpyCenter,1100,1900); // lateral for ROV
+        // control throttle and yaw with joystick
+        channels[2] = constrain_int16((z+zTrim)*throttleScale+throttleBase,1100,1900); // throttle
+        channels[3] = constrain_int16(r*rpyScale+rpyCenter,1100,1900);                 // yaw
     } else {
-        // neutralize forward and lateral input while we are adjusting roll and pitch
-        channels[4] = constrain_int16(xTrim*rpyScale+rpyCenter,1100,1900); // forward for ROV
-        channels[5] = constrain_int16(yTrim*rpyScale+rpyCenter,1100,1900); // lateral for ROV
+        // control roll and pitch with joystick
+        channels[2] = constrain_int16(zTrim*throttleScale+rpyCenter,1100,1900); // throttle
+        channels[3] = constrain_int16(rpyCenter,1100,1900);                 // yaw
     }
+
+    channels[4] = constrain_int16((x+xTrim)*rpyScale+rpyCenter,1100,1900); // forward for ROV
+    channels[5] = constrain_int16((y+yTrim)*rpyScale+rpyCenter,1100,1900); // lateral for ROV
 
     channels[6] = 0;             // Unused
     channels[7] = cam_tilt;      // camera tilt
