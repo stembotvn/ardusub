@@ -180,8 +180,11 @@ public:
     float get_declination() const;
 
     // set overall board orientation
-    void set_board_orientation(enum Rotation orientation) {
+    void set_board_orientation(enum Rotation orientation, Matrix3f* custom_rotation = nullptr) {
         _board_orientation = orientation;
+        if (custom_rotation) {
+            _custom_rotation = custom_rotation;
+        }
     }
 
     /// Set the motor compensation type
@@ -329,6 +332,7 @@ private:
 
     // board orientation from AHRS
     enum Rotation _board_orientation;
+    Matrix3f* _custom_rotation;
 
     // primary instance
     AP_Int8     _primary;
