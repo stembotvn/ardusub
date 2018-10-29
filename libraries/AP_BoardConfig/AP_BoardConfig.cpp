@@ -81,7 +81,7 @@ const AP_Param::GroupInfo AP_BoardConfig::var_info[] = {
     // @Values: 0:No PWMs,2:Two PWMs,4:Four PWMs,6:Six PWMs,7:Three PWMs and One Capture
     // @RebootRequired: True
     // @User: Advanced
-    AP_GROUPINFO("PWM_COUNT",    0, AP_BoardConfig, px4.pwm_count, BOARD_PWM_COUNT_DEFAULT),
+    AP_GROUPINFO("PWM_COUNT",    0, AP_BoardConfig, px4.pwm_count, 6),
 #endif
 
 #if CONFIG_HAL_BOARD == HAL_BOARD_PX4
