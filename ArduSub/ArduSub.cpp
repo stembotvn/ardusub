@@ -211,17 +211,28 @@ void Sub::fifty_hz_loop()
 {
     static uint16_t pwm_signal = 1100;
     static int8_t inc = 4;
-    for (uint8_t i = 0; i < 14; i++) {
-            hal.rcout->enable_ch(i);
+    static int8_t loop_counter = 0;
+    loop_counter +=1;
+    if (loop_counter > 30)
+    {
+        loop_counter = 0;
+        for (uint8_t i = 0; i < 14; i++) {
+                hal.rcout->enable_ch(i);
 
-        hal.rcout->write(i, pwm_signal);
+            hal.rcout->write(i, pwm_signal);
+        }
+
+        if (pwm_signal == 1100) {
+            pwm_signal = 1500;
+        }
+        else if (pwm_signal == 1500) {
+            pwm_signal = 1900;
+        }
+        else {
+            pwm_signal = 1100;
+        }
     }
-    if (pwm_signal > 1900) {
-        inc = -20;
-    } else if (pwm_signal < 1100) {
-        inc = 20;
-    }
-    pwm_signal += inc;
+
     //while (1);
     // // check pilot input failsafe
     // failsafe_pilot_input_check();
