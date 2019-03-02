@@ -80,20 +80,16 @@ void Sub::althold_run()
 
     if (fabsf(channel_throttle->norm_input()-0.5) > 0.05) { // Throttle input above 5%
         // output pilot's throttle
-        attitude_control.set_throttle_out(channel_throttle->norm_input(), false, g.throttle_filt);
-        // reset z targets to current values
-        pos_control.relax_alt_hold_controllers(motors.get_throttle_hover());
+        motors.set_throttle(channel_throttle->norm_input());
+        position_control.set_target_z(inertial_nav.get_altitude());
     } else { // hold z
 
         if (ap.at_bottom) {
-            pos_control.relax_alt_hold_controllers(motors.get_throttle_hover()); // clear velocity and position targets, and integrator
-            pos_control.set_alt_target(inertial_nav.get_altitude() + 10.0f); // set target to 10 cm above bottom
-        } else if (rangefinder_alt_ok()) {
-            // if rangefinder is ok, use surface tracking
-            float target_climb_rate = get_surface_tracking_climb_rate(0, pos_control.get_alt_target(), G_Dt);
-            pos_control.set_alt_target_from_climb_rate_ff(target_climb_rate, G_Dt, false);
+            position_control.set_target_z(inertial_nav.get_altitude() + 10.0f); // set target to 10 cm above bottom
         }
-        pos_control.update_z_controller();
+
+        position_control.update();
+        motors.set_throttle(position_control.get_output_z());
     }
 
     motors.set_forward(channel_forward->norm_input());

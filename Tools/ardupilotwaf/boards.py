@@ -125,10 +125,8 @@ class Board:
             '-Wno-redundant-decls',
             '-Wno-unknown-pragmas',
             '-Werror=format-security',
-            '-Werror=array-bounds',
             '-Werror=uninitialized',
             '-Werror=init-self',
-            '-Wfatal-errors',
         ]
 
         if 'clang++' in cfg.env.COMPILER_CXX:

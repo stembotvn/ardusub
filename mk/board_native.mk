@@ -30,11 +30,9 @@ WARNFLAGSCXX    = \
         -Wno-missing-field-initializers \
         -Wno-reorder \
         -Werror=format-security \
-        -Werror=array-bounds \
         -Werror=unused-but-set-variable \
         -Werror=uninitialized \
         -Werror=init-self \
-        -Wfatal-errors \
         -Wundef \
         -Wno-unknown-warning-option
 
