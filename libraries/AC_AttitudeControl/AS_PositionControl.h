@@ -1,6 +1,7 @@
 
 #include <AP_AHRS/AP_AHRS.h>
-#include <AP_Baro/AP_Baro.h>
+//#include <AP_Baro/AP_Baro.h>
+//#include <stdio.h>
 
 class AS_PositionControl
 {
@@ -19,18 +20,21 @@ public:
         output_z += p * get_error_z();
     };
 
+    float get_target_z() { return target_z_; }
     float get_output_x();
     float get_output_y();
     float get_output_z() { return output_z; }
     float get_error_x();
     float get_error_y();
-    float get_error_z() { return ahrs.get_baro().get_altitude() - target_z_; }
-    //float get_error_z() { return ahrs.get_baro.get_altitude() - target_z; }
+    float get_error_z()
+    {
+        return target_z_ - ahrs.get_baro().get_altitude();
+    }
 
 
 private:
-    float p, i, d;
-    // meters
+    float p = 1.0f, i, d;
+    // meters!
     float target_z_, target_x, target_y, output_x, output_y, output_z;
     const AP_AHRS& ahrs;
 
