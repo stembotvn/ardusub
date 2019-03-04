@@ -9,9 +9,9 @@ class AS_PositionControl
 public:
     AS_PositionControl(AP_AHRS& ahrs_) : ahrs(ahrs_) {}
 
-    void set_target_position(Vector3f target);
-    void set_target_velocity(Vector3f target);
-    void set_target_acceleration(Vector3f target);
+    void set_target_position(Vector3f target) { target_position = target; }
+    void set_target_velocity(Vector3f target) { target_velocity = target; }
+    void set_target_acceleration(Vector3f target) { target_acceleration = target; }
 
     Vector3f get_target_position();
     Vector3f get_target_velocity();
@@ -32,17 +32,17 @@ public:
 
 
 private:
-    AC_PID pid_position_x;
-    AC_PID pid_velocity_x;
-    AC_PID pid_acceleration_x;
+    AC_PID pid_position_x_;
+    AC_PID pid_velocity_x_;
+    AC_PID pid_acceleration_x_;
 
-    AC_PID pid_position_y;
-    AC_PID pid_velocity_y;
-    AC_PID pid_acceleration_y;
+    AC_PID pid_position_y_;
+    AC_PID pid_velocity_y_;
+    AC_PID pid_acceleration_y_;
 
     AC_PID pid_position_z_;
-    AC_PID pid_velocity_z;
-    AC_PID pid_acceleration_z;
+    AC_PID pid_velocity_z_;
+    AC_PID pid_acceleration_z_;
 
     // meters!
     Vector3f target_position;
@@ -54,12 +54,17 @@ private:
 
     void update_position_controller()
     {
-        target_velocity = 0;
         pid_position_z.set_input_filter_all(get_error_position().z);
-        
-
-        target_velocity += pid_position_.
+        target_velocity.z = pid_position_z.get_pid();
     };
-    void update_velocity_controller();
-    void update_acceleration_controller();
+    void update_velocity_controller()
+    {
+        pid_velocity_z.set_input_filter_all(get_error_velocity().z);
+        target_acceleration.z = pid_velocity_z.get_pid();
+    };
+    void update_acceleration_controller()
+    {
+        pid_acceleration_z.set_input_filter_all(get_error_acceleration().z);
+        output_command.z = pid_acceleration_z.get_pid();
+    }
 };
