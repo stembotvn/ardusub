@@ -9,33 +9,57 @@ class AS_PositionControl
 public:
     AS_PositionControl(AP_AHRS& ahrs_) : ahrs(ahrs_) {}
 
-    void set_target_x(float target_x);
-    void set_target_y(float target_y);
-    void set_target_z(float target_z) {
-        target_z_ = target_z;
-    };
+    void set_target_position(Vector3f target);
+    void set_target_velocity(Vector3f target);
+    void set_target_acceleration(Vector3f target);
+
+    Vector3f get_target_position();
+    Vector3f get_target_velocity();
+    Vector3f get_target_acceleration();
+
+    Vector3f get_error_position();
+    Vector3f get_error_velocity();
+    Vector3f get_error_acceleration();
+
     void update()
     {
-        output_z = 0;
-        output_z += p * get_error_z();
+        update_position_controller();
+        update_velocity_controller();
+        update_acceleration_controller();
     };
 
-    float get_target_z() { return target_z_; }
-    float get_output_x();
-    float get_output_y();
-    float get_output_z() { return output_z; }
-    float get_error_x();
-    float get_error_y();
-    float get_error_z()
-    {
-        return target_z_ - ahrs.get_baro().get_altitude();
-    }
+    Vector3f get_output_command();
 
 
 private:
-    float p = 1.0f, i, d;
+    AC_PID pid_position_x;
+    AC_PID pid_velocity_x;
+    AC_PID pid_acceleration_x;
+
+    AC_PID pid_position_y;
+    AC_PID pid_velocity_y;
+    AC_PID pid_acceleration_y;
+
+    AC_PID pid_position_z_;
+    AC_PID pid_velocity_z;
+    AC_PID pid_acceleration_z;
+
     // meters!
-    float target_z_, target_x, target_y, output_x, output_y, output_z;
+    Vector3f target_position;
+    Vector3f target_velocity;
+    Vector3f target_acceleration;
+    Vector3f output_command;
+
     const AP_AHRS& ahrs;
 
+    void update_position_controller()
+    {
+        target_velocity = 0;
+        pid_position_z.set_input_filter_all(get_error_position().z);
+        
+
+        target_velocity += pid_position_.
+    };
+    void update_velocity_controller();
+    void update_acceleration_controller();
 };
