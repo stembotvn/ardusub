@@ -23,9 +23,9 @@ public:
     Vector3f get_error_velocity() { return target_velocity - get_current_velocity(); }
     Vector3f get_error_acceleration() { return target_acceleration - get_current_acceleration(); }
 
-    Vector3f get_current_position() { return Vector3f { 0, 0, ahrs.get_baro().get_altitude() }; }
+    Vector3f get_current_position() { return Vector3f { 0, 0, ahrs_.get_baro().get_altitude() }; }
     //return ahrs_.get_relative_position_NED_origin();
-    Vector3f get_current_velocity() { return ahrs_.get_velocity_NED(); }
+    Vector3f get_current_velocity() { Vector3f a; ahrs_.get_velocity_NED(a); return a;}
     Vector3f get_current_acceleration() { return ahrs_.get_accel_ef_blended(); }
 
     void update()
@@ -38,17 +38,17 @@ public:
     Vector3f get_output_command();
 
 private:
-    AC_PID pid_position_x_ { 1.0f, 1.0f, 1.0f, 100.0f, 100.0f, 0.01f };
-    AC_PID pid_velocity_x_ { 1.0f, 1.0f, 1.0f, 100.0f, 100.0f, 0.01f };
-    AC_PID pid_acceleration_x_ { 1.0f, 1.0f, 1.0f, 100.0f, 100.0f, 0.01f };
+    AC_PID pid_position_x { 1.0f, 1.0f, 1.0f, 100.0f, 100.0f, 0.01f };
+    AC_PID pid_velocity_x { 1.0f, 1.0f, 1.0f, 100.0f, 100.0f, 0.01f };
+    AC_PID pid_acceleration_x { 1.0f, 1.0f, 1.0f, 100.0f, 100.0f, 0.01f };
 
-    AC_PID pid_position_y_ { 1.0f, 1.0f, 1.0f, 100.0f, 100.0f, 0.01f };
-    AC_PID pid_velocity_y_ { 1.0f, 1.0f, 1.0f, 100.0f, 100.0f, 0.01f };
-    AC_PID pid_acceleration_y_ { 1.0f, 1.0f, 1.0f, 100.0f, 100.0f, 0.01f };
+    AC_PID pid_position_y { 1.0f, 1.0f, 1.0f, 100.0f, 100.0f, 0.01f };
+    AC_PID pid_velocity_y { 1.0f, 1.0f, 1.0f, 100.0f, 100.0f, 0.01f };
+    AC_PID pid_acceleration_y { 1.0f, 1.0f, 1.0f, 100.0f, 100.0f, 0.01f };
 
-    AC_PID pid_position_z_ { 1.0f, 1.0f, 1.0f, 100.0f, 100.0f, 0.01f };
-    AC_PID pid_velocity_z_ { 1.0f, 1.0f, 1.0f, 100.0f, 100.0f, 0.01f };
-    AC_PID pid_acceleration_z_ { 1.0f, 1.0f, 1.0f, 100.0f, 100.0f, 0.01f };
+    AC_PID pid_position_z { 1.0f, 1.0f, 1.0f, 100.0f, 100.0f, 0.01f };
+    AC_PID pid_velocity_z { 1.0f, 1.0f, 1.0f, 100.0f, 100.0f, 0.01f };
+    AC_PID pid_acceleration_z { 1.0f, 1.0f, 1.0f, 100.0f, 100.0f, 0.01f };
 
     // meters!
     Vector3f target_position = { 0, 0, 0 };
