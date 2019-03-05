@@ -33,9 +33,10 @@ public:
         update_position_controller();
         update_velocity_controller();
         update_acceleration_controller();
-    };
+    }
 
-    Vector3f get_output_command();
+    Vector3f get_output_command() { return output_command; }
+    
 
 private:
     AC_PID pid_position_x { 1.0f, 1.0f, 1.0f, 100.0f, 100.0f, 0.01f };
@@ -74,5 +75,9 @@ private:
     {
         pid_acceleration_z.set_input_filter_all(get_error_acceleration().z);
         output_command.z = pid_acceleration_z.get_pid();
+        
+        output_command.x = constrain_float(output_command.x, -1.0f, 1.0f);
+        output_command.y = constrain_float(output_command.y, -1.0f, 1.0f);
+        output_command.z = constrain_float(output_command.z, -1.0f, 1.0f);
     }
 };
