@@ -81,17 +81,17 @@ void Sub::althold_run()
     if (fabsf(channel_throttle->norm_input()-0.5) > 0.05) { // Throttle input above 5%
         // output pilot's throttle
         motors.set_throttle(channel_throttle->norm_input());
-        position_control.set_target_z(barometer.get_altitude());
+        position_control.set_position_target(Vector3f { 0, 0, barometer.get_altitude() });
     } else { // hold z
 
-        if (ap.at_bottom) {
-            position_control.set_target_z(barometer.get_altitude() + 0.1f); // set target to 10 cm above bottom
-        }
+        // if (ap.at_bottom) {
+        //     position_control.set_target_z(barometer.get_altitude() + 0.1f); // set target to 10 cm above bottom
+        // }
 
         position_control.update();
-        motors.set_throttle(position_control.get_output_z());
+        motors.set_throttle(position_control.get_output_command().z);
     }
-    printf("target: %f current: %f output: %f\r\n", position_control.get_target_z(), barometer.get_altitude(), position_control.get_output_z());
+    //printf("target: %f current: %f output: %f\r\n", position_control.get_target_z(), barometer.get_altitude(), position_control.get_output_z());
 
     motors.set_forward(channel_forward->norm_input());
     motors.set_lateral(channel_lateral->norm_input());
