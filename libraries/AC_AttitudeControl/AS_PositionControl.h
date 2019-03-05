@@ -1,5 +1,8 @@
 
 #include <AP_AHRS/AP_AHRS.h>
+#include <AP_Param/AP_Param.h>
+#include <AC_PID/AC_PID.h>
+
 //#include <AP_Baro/AP_Baro.h>
 //#include <stdio.h>
 
@@ -9,6 +12,7 @@ class AS_PositionControl
 public:
     AS_PositionControl(AP_AHRS& ahrs) : ahrs_(ahrs)
     {
+        AP_Param::setup_object_defaults(this, var_info);
     }
 
     void set_target_position(Vector3f target) { target_position = target; }
@@ -37,6 +41,8 @@ public:
 
     Vector3f get_output_command() { return output_command; }
     
+    // parameters
+    static const struct AP_Param::GroupInfo var_info[];
 
 private:
     AC_PID pid_position_x { 1.0f, 1.0f, 1.0f, 100.0f, 100.0f, 0.01f };

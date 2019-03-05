@@ -571,6 +571,10 @@ const AP_Param::Info Sub::var_info[] = {
     // @Path: ../libraries/AC_AttitudeControl/AC_AttitudeControl.cpp,../libraries/AC_AttitudeControl/AC_AttitudeControl_Sub.cpp
     GOBJECT(attitude_control, "ATC_", AC_AttitudeControl_Sub),
 
+    // @Group: PSH_
+    // @Path: ../libraries/AC_AttitudeControl/AS_PositionControl.cpp
+    GOBJECT(position_control, "POS_", AS_PositionControl),
+
     // @Group: PSC
     // @Path: ../libraries/AC_AttitudeControl/AC_PosControl.cpp
     GOBJECT(pos_control, "PSC", AC_PosControl),
