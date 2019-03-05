@@ -70,7 +70,8 @@ public:
     void set_roll      (float roll_in)      { _last_roll_in = _roll_in; _roll_in = roll_in; };                 // range -1 ~ +1
     void set_pitch     (float pitch_in)     { _last_pitch_in = _pitch_in; _pitch_in = pitch_in; };             // range -1 ~ +1
     void set_yaw       (float yaw_in)       { _last_yaw_in = _yaw_in; _yaw_in = yaw_in; };                     // range -1 ~ +1
-    void set_throttle  (float throttle_in)  { _last_throttle_in = throttle_in; _throttle_in = throttle_in; };  // range 0 ~ 1
+    // TODO: change set_throttle to use range [-1, 1]
+    void set_throttle  (float throttle_in)  { _last_throttle_in = throttle_in; _throttle_in = throttle_in; };  // range  0 ~ +1
     void set_forward   (float forward_in)   { _last_forward_in = _forward_in; _forward_in = forward_in; };     // range -1 ~ +1
     void set_lateral   (float lateral_in)   { _last_lateral_in = _lateral_in; _lateral_in = lateral_in; };     // range -1 ~ +1
 
@@ -97,7 +98,7 @@ public:
     virtual void set_desired_spool_state(enum spool_up_down_desired spool) { _spool_desired = spool; };
 
     enum spool_up_down_desired get_desired_spool_state(void) const { return _spool_desired; }
-    
+
     //
     // voltage, current and air pressure compensation or limiting features - multicopters only
     //
@@ -157,7 +158,7 @@ public:
 
     enum pwm_type { PWM_TYPE_NORMAL=0, PWM_TYPE_ONESHOT=1, PWM_TYPE_ONESHOT125=2, PWM_TYPE_BRUSHED16kHz=3 };
     pwm_type            get_pwm_type(void) const { return (pwm_type)_pwm_type.get(); }
-    
+
     // Limit the rate of change on all inputs to the mixer
     // max_rate is the maximum allowed rate of change as a percentage of the range per second
     // dt is the time delta in seconds between calls
@@ -180,7 +181,7 @@ protected:
 
     // add a motor to the motor map
     bool add_motor_num(int8_t motor_num);
-    
+
     // update the throttle input filter
     virtual void update_throttle_filter() = 0;
 
@@ -213,7 +214,7 @@ protected:
             // change for this loop
             max_change = 0.001 * range;
         }
-        
+
         current = constrain_float(current, previous - max_change, previous + max_change);
     }
 
