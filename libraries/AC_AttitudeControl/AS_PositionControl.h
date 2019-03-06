@@ -34,10 +34,20 @@ public:
 
     void update()
     {
-        //update_position_controller();
+        if (fabs(target_velocity.z) < 0.01) {
+            if(!_hold_pos) {
+                set_target_position(get_current_position());
+                _hold_pos = true;
+            }
+        } else {
+            _hold_pos = false;
+        }
+        if (_hold_pos) {
+                update_position_controller();
+        }
         update_velocity_controller();
         //update_acceleration_controller();
-        //printf("target_acc: %f, current_acc: %f, acc_error: %f, target_speed: %f, current speed: %f, command.z: %f\n", target_acceleration.z, get_current_acceleration().z, get_error_acceleration().z , target_velocity.z, get_current_velocity().z, output_command.z);
+        printf("target_pos: %f, current_pos: %f, pos_error: %f, target_speed: %f, current speed: %f, command.z: %f\n", target_position  .z, get_current_position().z, get_error_position().z , target_velocity.z, get_current_velocity().z, output_command.z);
 
     }
 
@@ -66,10 +76,11 @@ private:
     Vector3f output_command = { 0, 0, 0 };
 
     const AP_AHRS& ahrs_;
+    bool _hold_pos = false;
 
     void update_position_controller()
     {
-        pid_position_z.set_input_filter_all(get_error_position().z);
+        pid_position_z.set_input_filter_all(-get_error_position().z);
         //printf("error_position: %f\n", get_error_position().z);
         target_velocity.z = pid_position_z.get_pid();
     }
