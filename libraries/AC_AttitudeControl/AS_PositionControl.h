@@ -2,7 +2,7 @@
 #include <AP_AHRS/AP_AHRS.h>
 #include <AP_Param/AP_Param.h>
 #include <AC_PID/AC_PID.h>
-
+#include <AP_InertialNav/AP_InertialNav.h>
 //#include <AP_Baro/AP_Baro.h>
 #include <stdio.h>
 
@@ -10,7 +10,7 @@ class AS_PositionControl
 {
 
 public:
-    AS_PositionControl(AP_AHRS& ahrs) : ahrs_(ahrs)
+    AS_PositionControl(AP_InertialNav_NavEKF& inertial_nav) : inertial_nav_(inertial_nav)
     {
         AP_Param::setup_object_defaults(this, var_info);
     }
@@ -27,10 +27,10 @@ public:
     Vector3f get_error_velocity() { return target_velocity - get_current_velocity(); }
     Vector3f get_error_acceleration() { return target_acceleration - get_current_acceleration(); }
 
-    Vector3f get_current_position() { return Vector3f { 0, 0, ahrs_.get_baro().get_altitude() }; }
+    Vector3f get_current_position() { return Vector3f { 0, 0, inertial_nav_.get_altitude()/100 }; }
     //return ahrs_.get_relative_position_NED_origin();
-    Vector3f get_current_velocity() { Vector3f a; ahrs_.get_velocity_NED(a); return a;}
-    Vector3f get_current_acceleration() { return Vector3f {0, 0, -(ahrs_.get_accel_ef_blended().z + GRAVITY_MSS)}; }
+    Vector3f get_current_velocity() { return inertial_nav_.get_velocity()/100;};
+    Vector3f get_current_acceleration() { return Vector3f {0, 0, 0};};//-(inertial_nav_.get_accel_ef_blended().z + GRAVITY_MSS)}; }
 
     void update()
     {
@@ -75,19 +75,19 @@ private:
     Vector3f target_acceleration = { 0, 0, 0 };
     Vector3f output_command = { 0, 0, 0 };
 
-    const AP_AHRS& ahrs_;
+    const AP_InertialNav_NavEKF& inertial_nav_;
     bool _hold_pos = false;
 
     void update_position_controller()
     {
         pid_position_z.set_input_filter_all(-get_error_position().z);
         //printf("error_position: %f\n", get_error_position().z);
-        target_velocity.z = pid_position_z.get_pid();
+        target_velocity.z = -pid_position_z.get_pid();
     }
 
     void update_velocity_controller()
     {
-        pid_velocity_z.set_input_filter_all(-get_error_velocity().z);
+        pid_velocity_z.set_input_filter_all(get_error_velocity().z);
         target_acceleration.z = pid_velocity_z.get_pid();
         output_command.z = target_acceleration.z;
     }
